@@ -1,3 +1,5 @@
+from classes import conectar
+
 requisicao = ['''
     CREATE TABLE IF NOT EXISTS emprestimos(
     "id" BIGINT PRIMARY KEY NOT NULL,
@@ -36,3 +38,12 @@ exclude = ['''
     ''',
     '''DROP TABLE livros CASCADE
     ''']
+
+def correcao():
+    conexao = conectar()
+    cur = conexao.cursor()
+    for i in requisicao:
+        cur.execute(i)
+    conexao.commit()
+    cur.close()
+    conexao.close()
