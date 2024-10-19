@@ -71,7 +71,7 @@ class Biblioteca:
     def __init__(self):
         self.catalogo = dict()
         self.usuarios_registrados = list()
-
+    #LIVROS
     #CREATE
     def adicionar_livro(self, livro: Livros) -> None:
         conexao = conectar()
@@ -85,6 +85,25 @@ class Biblioteca:
             print(f'O livro {livro.titulo} foi adicionado ao catálogo!')
         except Exception as error:
             print(error)
+        finally:
+            conexao.close()
+
+    def adicionar_usuario(self, usuario: Usuario) -> None:
+        nome = (usuario.nome).lower()
+        sobrenome = (usuario.sobrenome).lower()
+        email = (usuario.email).lower()
+        telefone = usuario.telefone
+
+        conexao = conectar()
+        cur = conexao.cursor()
+        try:
+            cur.execute("""INSERT INTO usuarios (nome, sobrenome, email, telefone)
+                        VALUES (%s, %s, %s, %s)
+            """, (nome, sobrenome, email, telefone))
+            conexao.commit()
+            cur.close()
+        except:
+            print('ocorreu um erro na inserção dos dados dos usuários')
         finally:
             conexao.close()
 
@@ -102,18 +121,18 @@ class Biblioteca:
         for i in rows:
             print(i)
 
-    #UPDATE
-    def alterar_dados(self, usuario: Usuario|None = None, livro: Livros|None = None, query: str|None = None):
-        conexao = conectar()
-        cur = conexao.cursor()
-        try:
-            cur.execute(query)
-            print('a alteração foi executada!')
-        except Exception as error:
-            print(error)
-        finally:
-            conexao.close()
-        
+    #UPDATE DEPOIS EU FAÇO
+    # def alterar_dados(self, usuario: Usuario|None = None, livro: Livros|None = None, query: str|None = None):
+    #     conexao = conectar()
+    #     cur = conexao.cursor()
+    #     try:
+    #         cur.execute(query)
+    #         print('a alteração foi executada!')
+    #     except Exception as error:
+    #         print(error)
+    #     finally:
+    #         conexao.close()
+
     #DELETE
     def remover_livro(self, livro: Livros) -> None:
         conexao = conectar()
@@ -129,15 +148,15 @@ class Biblioteca:
         finally:
             conexao.close()
     
-    def listar_livros_disponiveis(self) -> list:
-        disponiveis = [livro for livro in self.catalogo.values() if livro.disponivel]
-        if disponiveis:
-            print('Livros disponíveis na biblioteca:')
-            for livro in disponiveis:
-                print(livro)
-        else:
-            print('Não há livros disponíveis.')
-        return disponiveis
+    # def listar_livros_disponiveis(self) -> list:
+    #     disponiveis = [livro for livro in self.catalogo.values() if livro.disponivel]
+    #     if disponiveis:
+    #         print('Livros disponíveis na biblioteca:')
+    #         for livro in disponiveis:
+    #             print(livro)
+    #     else:
+    #         print('Não há livros disponíveis.')
+    #     return disponiveis
 
     def emprestar_livro(self, livro_id: str, usuario: Usuario):
         #conectar na bd
@@ -146,9 +165,7 @@ class Biblioteca:
         
         #executar query para alterar registro do usuário
         cur.execute()
-
-
-
+        
         if usuario not in self.usuarios_registrados:
             self.usuarios_registrados.append(usuario.nome)
         livro = self.catalogo.get(livro_id)
@@ -162,25 +179,25 @@ class Biblioteca:
         usuario.livros_emprestados.append(livro)
         print(f'o livro foi emprestado para {usuario.nome} com sucesso!')
     
-    def devolver_livro(self, livro_id: str, usuario):
-        livro = self.catalogo.get(livro_id)
-        if not livro:
-            print('Este livro não está no catálogo!')
-            return
-        if livro.disponivel:
-            print('Este livro já está disponível! Não há o que devolver')
-            return
-        usuario.livros_emprestados.remove(livro)
-        print(f'O livro {livro.titulo} foi devolvido por {usuario.nome}!')
+    # def devolver_livro(self, livro_id: str, usuario):
+    #     livro = self.catalogo.get(livro_id)
+    #     if not livro:
+    #         print('Este livro não está no catálogo!')
+    #         return
+    #     if livro.disponivel:
+    #         print('Este livro já está disponível! Não há o que devolver')
+    #         return
+    #     usuario.livros_emprestados.remove(livro)
+    #     print(f'O livro {livro.titulo} foi devolvido por {usuario.nome}!')
 
     def listar_usuarios(self):
         print(self.usuarios_registrados)
 
-    def excluir_usuario(self, nome_usuario: str):
-        if nome_usuario not in self.usuarios_registrados:
-            print('Este usuário não é desta biblioteca!')
-            return
-        self.usuarios_registrados.remove(nome_usuario)
+    # def excluir_usuario(self, nome_usuario: str):
+    #     if nome_usuario not in self.usuarios_registrados:
+    #         print('Este usuário não é desta biblioteca!')
+    #         return
+    #     self.usuarios_registrados.remove(nome_usuario)
 
 
 def main():
