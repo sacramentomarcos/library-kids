@@ -27,45 +27,69 @@ def conectar() -> psycopg2:
         return None
     return connection
 
+
+
 class Livros:
-    def __init__(self,  titulo: str, autor: str, ano: int) -> None:
-        self.id = str(uuid.uuid4())
+    def __init__(self, isbn: str, titulo: str, editora: str, autor: str, ano: int) -> None:
         self.titulo = titulo
         self.autor = autor
         self.ano = ano
+        self.isbn = isbn
         self.disponivel = True
-
-        self.editora = 'Casa de Oração'
+        self.editora = editora
 
     def __str__(self) -> str:
         status = 'Disponivel' if self.disponivel else 'Emprestado'
         info = {
-            'id': str(self.id),
+            'isbn': self.isbn,
             'titulo': self.titulo,
             'autor': self.autor,
             'ano': self.ano,
-            'editora': self.editora,
-            'status': status
+            'status': status,
         }
         return json.dumps(info, indent=4)
+    
+class LivrosRepositorio:
+    def __init__(self, livro: Livros):
+        try:
+            conexao = conectar()
+            cur = conexao.cursor()
+            cur.execute('INSERT INTO livros (titulo, autor, ano, editora, disponivel, isbn) VALUES (%s, %s, %s, %s, %s, %s)',
+                        (livro.titulo, livro.autor, livro.ano, livro.editora, livro.isbn))
+        except Exception as error:
+            print('Não foi possível cadastrar o livro', error)
+        finally:
+            cur.close()
+            conexao.close()
 
 class Usuario:
-    def __init__(self, nome: str, sobrenome: str, email: str, telefone: int) -> None:
-        self.nome = nome
-        self.sobrenome = sobrenome
-        self.email = email
+    def __init__(self, nome: str, sobrenome: str, email: str, telefone: str) -> None:
+        self.nome = nome.lower()
+        self.sobrenome = sobrenome.lower()
+        self.email = email.lower()
         self.telefone = telefone
-        conexao = conectar()
-        cur = conexao.cursor()
-        cur.execute('INSERT INTO usuarios (nome, sobrenome, email, telefone) VALUES (%s, %s, %s, %s)',
-                    (self.nome, self.sobrenome, self.email, self.telefone))
-    
+
     def __str__(self):
         dados_usuario: dict = {
             'Nome': self.nome,
             'Livro(s) emprestados': self.livros_emprestados,
         }
         return str(dados_usuario)
+
+class UsuarioRepositorio:
+    def __init__(self):
+        self.conexao = conectar()
+
+    def inserir_usuario(self, usuario: Usuario):
+        try:
+            cur = self.conexao.cursor()
+            cur.execute('INSERT INTO usuarios (nome, sobrenome, email, telefone) VALUES (%s, %s, %s, %s)',
+                        (usuario.nome, usuario.sobrenome, usuario.email, usuario.telefone))
+        except Exception as error:
+            print('não foi possível cadastrar usuário', error)
+        finally:
+            cur.close()
+            self.conexao.close()
 
 class Biblioteca:
     def __init__(self):
