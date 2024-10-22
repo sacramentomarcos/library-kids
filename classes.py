@@ -50,7 +50,7 @@ class Livros:
         return json.dumps(info, indent=4)
     
 class LivrosRepositorio:
-    def __init__(self, livro: Livros):
+    def adicionar_livro(self, livro: Livros):
         try:
             conexao = conectar()
             cur = conexao.cursor()
@@ -61,9 +61,21 @@ class LivrosRepositorio:
         finally:
             cur.close()
             conexao.close()
+    
+    def excluir_livro(self, livro: Livros):
+        try:
+            cur = self.conexao.cursor()
+            cur.execute('INSERT INTO livros (titulo, autor, ano, editora, disponivel, isbn) VALUES (%s, %s, %s, %s, %s, %s)',
+                        (livro.titulo, livro.autor, livro.ano, livro.editora, livro.isbn))
+        except Exception as error:
+            print('Não foi possível cadastrar o livro', error)
+        finally:
+            cur.close()
+            self.conexao.close()
+
 
 class Usuario:
-    def __init__(self, nome: str, sobrenome: str, email: str, telefone: str) -> None:
+    def __init__(self, nome: str, sobrenome: str, email: str, telefone: str):
         self.nome = nome.lower()
         self.sobrenome = sobrenome.lower()
         self.email = email.lower()
@@ -72,9 +84,11 @@ class Usuario:
     def __str__(self):
         dados_usuario: dict = {
             'Nome': self.nome,
-            'Livro(s) emprestados': self.livros_emprestados,
+            'Sobrenome': self.sobrenome,
+            'email': self.email,
+            'telefone': self.telefone
         }
-        return str(dados_usuario)
+        return json.dumps(dados_usuario)
 
 class UsuarioRepositorio:
     def __init__(self):
@@ -91,45 +105,30 @@ class UsuarioRepositorio:
             cur.close()
             self.conexao.close()
 
+    def excluir_usuario(self, usuario: Usuario):
+        try:
+            cur = self.conexao.cursor()
+            cur.execute(f'''DELETE * FROM usuarios
+                        WHERE nome = {usuario.nome},
+                        sobrenome = {usuario.sobrenome},
+                        email = {usuario.email},
+                        telefone = {usuario.telefone}
+            ''')
+        except Exception as error:
+            print('não foi possível excluir o usuário\n', error)
+        finally:
+            cur.close()
+            self.conexao.close()
+
 class Biblioteca:
     def __init__(self):
-        self.catalogo = dict()
-        self.usuarios_registrados = list()
+        pass
     #LIVROS
     #CREATE
-    def adicionar_livro(self, livro: Livros) -> None:
-        conexao = conectar()
-        cur = conexao.cursor()
-        try:
-            cur.execute(f'''
-                INSERT INTO livros (id, titulo, autor, ano, disponivel, editora)
-                VALUES (%s, %s, %s, %s, %s, %s);
-                ''', (livro.id, livro.titulo, livro.autor, livro.ano, livro.disponivel, livro.editora))
-            conexao.commit()
-            print(f'O livro {livro.titulo} foi adicionado ao catálogo!')
-        except Exception as error:
-            print(error)
-        finally:
-            conexao.close()
+    def add_usuario(self):
+        pass
+    def add_livros(self):
 
-    def adicionar_usuario(self, usuario: Usuario) -> None:
-        nome = (usuario.nome).lower()
-        sobrenome = (usuario.sobrenome).lower()
-        email = (usuario.email).lower()
-        telefone = usuario.telefone
-
-        conexao = conectar()
-        cur = conexao.cursor()
-        try:
-            cur.execute("""INSERT INTO usuarios (nome, sobrenome, email, telefone)
-                        VALUES (%s, %s, %s, %s)
-            """, (nome, sobrenome, email, telefone))
-            conexao.commit()
-            cur.close()
-        except:
-            print('ocorreu um erro na inserção dos dados dos usuários')
-        finally:
-            conexao.close()
 
     #READ
     def listar_livros(self):
